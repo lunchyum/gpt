@@ -1,0 +1,18 @@
+name: google-trends-test
+on:
+  push:
+    branches:
+      - tmp/google-trends-test-20260817
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install pytrends pandas
+      - run: python tmp/google-trends-test-20260817/test.py
