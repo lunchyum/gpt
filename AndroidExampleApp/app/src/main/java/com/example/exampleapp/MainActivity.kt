@@ -32,12 +32,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Celebration
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -46,7 +40,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
@@ -179,15 +172,7 @@ private fun ExpressiveApp() {
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .clip(RoundedCornerShape(22.dp))
-                        .background(energyColor),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(Icons.Default.AutoAwesome, null, tint = MaterialTheme.colorScheme.onPrimary)
-                }
+                ExpressiveGlyph("✦", energyColor, modifier = Modifier.size(56.dp))
             }
 
             Card(
@@ -201,12 +186,12 @@ private fun ExpressiveApp() {
                         AssistChip(
                             onClick = { energy = "Spark" },
                             label = { Text("Spark") },
-                            leadingIcon = { Icon(Icons.Default.AutoAwesome, null) }
+                            leadingIcon = { Text("✦", fontSize = 16.sp) }
                         )
                         AssistChip(
                             onClick = { energy = "Joy" },
                             label = { Text("Joy") },
-                            leadingIcon = { Icon(Icons.Default.Celebration, null) }
+                            leadingIcon = { Text("✺", fontSize = 16.sp) }
                         )
                     }
 
@@ -258,7 +243,7 @@ private fun ExpressiveApp() {
                             contentColor = Color.White
                         )
                     ) {
-                        Icon(Icons.Default.Celebration, null)
+                        Text("✺", fontSize = 20.sp)
                         Spacer(Modifier.width(10.dp))
                         Text("Create a moment", fontWeight = FontWeight.Bold, fontSize = 17.sp)
                     }
@@ -279,15 +264,7 @@ private fun ExpressiveApp() {
                             Text("Responsive motion", fontWeight = FontWeight.ExtraBold)
                             Text("Press, pulse, wave, repeat.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        Box(
-                            modifier = Modifier
-                                .size(34.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(MaterialTheme.colorScheme.primaryContainer),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(Icons.Default.AutoAwesome, null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
-                        }
+                        ExpressiveGlyph("✦", MaterialTheme.colorScheme.primaryContainer, modifier = Modifier.size(34.dp), glyphColor = MaterialTheme.colorScheme.onPrimaryContainer)
                     }
 
                     AnimatedVisibility(visible = bannerVisible) {
@@ -329,15 +306,7 @@ private fun ExpressiveApp() {
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Row(Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(MaterialTheme.colorScheme.tertiary),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(Icons.Default.Favorite, null, tint = MaterialTheme.colorScheme.onTertiary)
-                    }
+                    ExpressiveGlyph("♥", MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(56.dp), glyphColor = MaterialTheme.colorScheme.onTertiary)
                     Spacer(Modifier.width(14.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Expressive by default", fontWeight = FontWeight.Black)
@@ -364,8 +333,25 @@ private fun ExpressiveApp() {
             contentColor = MaterialTheme.colorScheme.onTertiary,
             shape = RoundedCornerShape(24.dp)
         ) {
-            Icon(Icons.Default.Refresh, contentDescription = "Reset")
+            Text("↻", fontSize = 24.sp, fontWeight = FontWeight.Black)
         }
+    }
+}
+
+@Composable
+private fun ExpressiveGlyph(
+    glyph: String,
+    containerColor: Color,
+    modifier: Modifier,
+    glyphColor: Color = Color.White,
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(22.dp))
+            .background(containerColor),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(glyph, color = glyphColor, fontSize = 22.sp, fontWeight = FontWeight.Black)
     }
 }
 
