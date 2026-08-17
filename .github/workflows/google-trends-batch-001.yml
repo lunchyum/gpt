@@ -1,0 +1,29 @@
+name: Google Trends Batch 001
+
+on:
+  push:
+    paths:
+      - 'google-trends-batches/001/**'
+      - '.github/workflows/google-trends-batch-001.yml'
+  workflow_dispatch:
+
+jobs:
+  trends:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip pytrends pandas
+      - name: Run Google Trends
+        run: python google-trends-batches/001/run_trends.py
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: google-trends-batch-001
+          path: google-trends-batches/001/
+          if-no-files-found: error
