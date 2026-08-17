@@ -5,7 +5,8 @@ from pytrends.request import TrendReq
 terms = [x.strip() for x in Path('trends/batch-01.txt').read_text(encoding='utf-8').splitlines() if x.strip()]
 anchor = '유튜브'
 pytrends = TrendReq(hl='ko', tz=540, timeout=(10,30), retries=0, backoff_factor=0)
-pytrends.build_payload(terms + [anchor], cat=0, timeframe='2004-01-01 2026-08-15', geo='KR', gprop='websearch')
+# pytrends uses an empty gprop to indicate standard web search.
+pytrends.build_payload(terms + [anchor], cat=0, timeframe='2004-01-01 2026-08-15', geo='KR', gprop='')
 df = pytrends.interest_over_time().drop(columns=['isPartial'], errors='ignore')
 
 out = Path('trends/results')
