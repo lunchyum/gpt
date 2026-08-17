@@ -9,6 +9,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -46,8 +47,6 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearWavyProgressIndicator
-import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
@@ -73,7 +72,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import kotlin.math.PI
 import kotlin.math.min
+import kotlin.math.sin
 
 private val ExpressivePrimary = Color(0xFF6D42FF)
 private val ExpressiveSecondary = Color(0xFFE94772)
@@ -112,6 +113,12 @@ private fun ExpressiveApp() {
         targetValue = 360f,
         animationSpec = infiniteRepeatable(tween(18000)),
         label = "ambientRotation"
+    )
+    val wavePhase by infinite.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(1600)),
+        label = "wavePhase"
     )
     val heroScale by animateFloatAsState(
         targetValue = if (bannerVisible) 1.035f else 1f,
@@ -256,14 +263,11 @@ private fun ExpressiveApp() {
                         Text("Create a moment", fontWeight = FontWeight.Bold, fontSize = 17.sp)
                     }
 
-                    LinearWavyProgressIndicator(
-                        progress = { progress },
-                        modifier = Modifier.fillMaxWidth().height(14.dp),
+                    ExpressiveWaveProgress(
+                        progress = progress,
+                        phase = wavePhase,
                         color = energyColor,
-                        trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                        amplitude = { p -> if (p >= 0.72f) 0.75f else 0.42f },
-                        wavelength = 34.dp,
-                        waveSpeed = 40.dp
+                        trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
                     )
 
                     Row(
@@ -275,10 +279,15 @@ private fun ExpressiveApp() {
                             Text("Responsive motion", fontWeight = FontWeight.ExtraBold)
                             Text("Press, pulse, wave, repeat.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        LoadingIndicator(
-                            progress = { progress },
-                            modifier = Modifier.size(34.dp)
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.AutoAwesome, null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                        }
                     }
 
                     AnimatedVisibility(visible = bannerVisible) {
@@ -319,7 +328,7 @@ private fun ExpressiveApp() {
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
-                Row(modifier = Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
                             .size(56.dp)
@@ -356,6 +365,34 @@ private fun ExpressiveApp() {
             shape = RoundedCornerShape(24.dp)
         ) {
             Icon(Icons.Default.Refresh, contentDescription = "Reset")
+        }
+    }
+}
+
+@Composable
+private fun ExpressiveWaveProgress(
+    progress: Float,
+    phase: Float,
+    color: Color,
+    trackColor: Color,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().height(18.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(3.dp)
+    ) {
+        repeat(28) { index ->
+            val normalized = index / 27f
+            val active = normalized <= progress
+            val wave = (sin((normalized * PI * 4.0) + (phase * PI * 2.0)) * 0.5 + 0.5).toFloat()
+            val height = if (active) (7 + wave * 9).dp else 5.dp
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(height)
+                    .clip(RoundedCornerShape(50))
+                    .background(if (active) color else trackColor)
+            )
         }
     }
 }
