@@ -2,44 +2,45 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "feat/**" ]
+    paths:
+      - "AndroidExampleApp/**"
+      - ".github/workflows/build-apk.yml"
   pull_request:
     branches: [ "main" ]
+    paths:
+      - "AndroidExampleApp/**"
+      - ".github/workflows/build-apk.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 env:
-  GRADLE_VERSION: "8.7"
+  GRADLE_VERSION: "9.3.1"
 
 jobs:
   build-apk:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
-
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: ${{ env.GRADLE_VERSION }}
-
       - name: Build debug APK
         working-directory: AndroidExampleApp
         run: gradle --no-daemon assembleDebug
-
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: android-example-debug-apk
+          name: neis-wallpaper-debug-apk
           path: AndroidExampleApp/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14

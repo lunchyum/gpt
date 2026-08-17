@@ -1,25 +1,16 @@
-package com.example.exampleapp
+package com.lunchyum.neiswallpaper
 
+import android.app.WallpaperManager
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,358 +18,295 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AssistChip
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.CloudDownload
+import androidx.compose.material.icons.filled.Fastfood
+import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.Wallpaper
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MotionScheme
-import androidx.compose.material3.Shapes
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.material3.expressiveDarkColorScheme
 import androidx.compose.material3.expressiveLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
-import kotlin.math.PI
-import kotlin.math.min
-import kotlin.math.sin
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
-private val ExpressivePrimary = Color(0xFF6D42FF)
-private val ExpressiveSecondary = Color(0xFFE94772)
-private val ExpressiveTertiary = Color(0xFF006C5B)
-private val ExpressiveWarm = Color(0xFFFFB74D)
-private val ExpressiveSurface = Color(0xFFFFF9FD)
+private enum class DisplayMode(val label: String) { TIMETABLE("시간표"), MEAL("급식"), BOTH("둘 다") }
+private enum class SchoolLevel(val label: String, val apiName: String) {
+    ELEMENTARY("초등학교", "elsTimetable"),
+    MIDDLE("중학교", "misTimetable"),
+    HIGH("고등학교", "hisTimetable")
+}
+private data class LessonUi(val period: Int, val subject: String)
+private data class MealUi(val type: String, val items: List<String>, val kcal: String?)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            MaterialExpressiveTheme(
-                colorScheme = expressiveLightColorScheme(),
-                motionScheme = MotionScheme.expressive(),
-                shapes = Shapes(largeIncreased = RoundedCornerShape(36.dp)),
-            ) {
-                ExpressiveApp()
-            }
-        }
+        setContent { NeisWallpaperApp() }
     }
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun ExpressiveApp() {
-    var count by rememberSaveable { mutableIntStateOf(0) }
-    var energy by rememberSaveable { mutableStateOf("Spark") }
-    var bannerVisible by rememberSaveable { mutableStateOf(false) }
-    var progress by rememberSaveable { mutableFloatStateOf(0.25f) }
+private fun NeisWallpaperApp() {
+    val context = LocalContext.current
+    val inspection = LocalInspectionMode.current
+    val prefs = remember { context.getSharedPreferences("neis_wallpaper", Context.MODE_PRIVATE) }
 
+    var apiKey by remember { mutableStateOf(prefs.getString("apiKey", "") ?: "") }
+    var office by remember { mutableStateOf(prefs.getString("office", "B10") ?: "") }
+    var schoolCode by remember { mutableStateOf(prefs.getString("schoolCode", "") ?: "") }
+    var schoolName by remember { mutableStateOf(prefs.getString("schoolName", "우리 학교") ?: "우리 학교") }
+    var grade by remember { mutableStateOf(prefs.getString("grade", "1") ?: "1") }
+    var classNo by remember { mutableStateOf(prefs.getString("classNo", "1") ?: "1") }
+    var level by remember { mutableStateOf(runCatching { SchoolLevel.valueOf(prefs.getString("level", SchoolLevel.HIGH.name) ?: SchoolLevel.HIGH.name) }.getOrDefault(SchoolLevel.HIGH)) }
+    var mode by remember { mutableStateOf(runCatching { DisplayMode.valueOf(prefs.getString("mode", DisplayMode.BOTH.name) ?: DisplayMode.BOTH.name) }.getOrDefault(DisplayMode.BOTH)) }
+    var date by remember { mutableStateOf(LocalDate.now()) }
+    var loading by remember { mutableStateOf(false) }
+    var lessons by remember { mutableStateOf<List<LessonUi>>(emptyList()) }
+    var meals by remember { mutableStateOf<List<MealUi>>(emptyList()) }
+    val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    val pulse = remember { Animatable(1f) }
-    val infinite = rememberInfiniteTransition(label = "ambient")
-    val ambientRotation by infinite.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(tween(18000)),
-        label = "ambientRotation"
-    )
-    val wavePhase by infinite.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(1600)),
-        label = "wavePhase"
-    )
-    val heroScale by animateFloatAsState(
-        targetValue = if (bannerVisible) 1.035f else 1f,
-        animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
-        label = "heroScale"
-    )
-    val heroSize by animateDpAsState(
-        targetValue = (176 + count * 4).coerceAtMost(242).dp,
-        animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
-        label = "heroSize"
-    )
-    val energyColor by animateColorAsState(
-        targetValue = when (energy) {
-            "Bright" -> ExpressiveWarm
-            "Playful" -> ExpressiveSecondary
-            "Fresh" -> Color(0xFF2AAE9B)
-            else -> ExpressivePrimary
-        },
-        animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
-        label = "energyColor"
-    )
 
-    Box(modifier = Modifier.fillMaxSize().background(ExpressiveSurface)) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 18.dp, vertical = 18.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        "MATERIAL 3 EXPRESSIVE",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.8.sp
-                    )
-                    AnimatedContent(targetState = energy, label = "headline") { target ->
-                        Text(
-                            text = when (target) {
-                                "Bright" -> "Make it glow."
-                                "Playful" -> "Make it playful."
-                                "Fresh" -> "Make it breathe."
-                                else -> "Make it move."
-                            },
-                            style = MaterialTheme.typography.displaySmall,
-                            fontWeight = FontWeight.Black
-                        )
-                    }
-                    Text(
-                        "Expressive color, shape and motion—tied together by one system.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                ExpressiveGlyph("✦", energyColor, modifier = Modifier.size(56.dp))
-            }
+    fun saveApiKey(value: String) { apiKey = value; prefs.edit().putString("apiKey", value).apply() }
+    fun saveOffice(value: String) { office = value; prefs.edit().putString("office", value).apply() }
+    fun saveSchoolCode(value: String) { schoolCode = value; prefs.edit().putString("schoolCode", value).apply() }
+    fun saveSchoolName(value: String) { schoolName = value; prefs.edit().putString("schoolName", value).apply() }
+    fun saveGrade(value: String) { grade = value; prefs.edit().putString("grade", value).apply() }
+    fun saveClassNo(value: String) { classNo = value; prefs.edit().putString("classNo", value).apply() }
+    fun saveLevel(value: SchoolLevel) { level = value; prefs.edit().putString("level", value.name).apply() }
+    fun saveMode(value: DisplayMode) { mode = value; prefs.edit().putString("mode", value.name).apply() }
 
-            Card(
-                modifier = Modifier.fillMaxWidth().graphicsLayer(scaleX = heroScale, scaleY = heroScale),
-                shape = RoundedCornerShape(36.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-            ) {
-                Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        AssistChip(
-                            onClick = { energy = "Spark" },
-                            label = { Text("Spark") },
-                            leadingIcon = { Text("✦", fontSize = 16.sp) }
-                        )
-                        AssistChip(
-                            onClick = { energy = "Joy" },
-                            label = { Text("Joy") },
-                            leadingIcon = { Text("✺", fontSize = 16.sp) }
-                        )
-                    }
-
-                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        Box(
-                            modifier = Modifier
-                                .size(heroSize)
-                                .graphicsLayer {
-                                    rotationZ = ambientRotation * 0.04f
-                                    scaleX = pulse.value
-                                    scaleY = pulse.value
-                                }
-                                .clip(RoundedCornerShape(54.dp, 82.dp, 58.dp, 78.dp))
-                                .background(
-                                    Brush.linearGradient(
-                                        listOf(
-                                            energyColor,
-                                            MaterialTheme.colorScheme.primary,
-                                            MaterialTheme.colorScheme.tertiary
-                                        )
-                                    )
-                                )
-                        )
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                "$count",
-                                style = MaterialTheme.typography.displayLarge,
-                                color = Color.White,
-                                fontWeight = FontWeight.Black
-                            )
-                            Text("moments", color = Color.White.copy(alpha = 0.84f))
-                        }
-                    }
-
-                    Button(
-                        onClick = {
-                            count++
-                            progress = min(1f, progress + 0.1f)
-                            bannerVisible = true
-                            scope.launch {
-                                pulse.animateTo(1.08f, tween(180))
-                                pulse.animateTo(1f, spring(dampingRatio = Spring.DampingRatioMediumBouncy))
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth().height(58.dp),
-                        shape = RoundedCornerShape(24.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = energyColor,
-                            contentColor = Color.White
-                        )
-                    ) {
-                        Text("✺", fontSize = 20.sp)
-                        Spacer(Modifier.width(10.dp))
-                        Text("Create a moment", fontWeight = FontWeight.Bold, fontSize = 17.sp)
-                    }
-
-                    ExpressiveWaveProgress(
-                        progress = progress,
-                        phase = wavePhase,
-                        color = energyColor,
-                        trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text("Responsive motion", fontWeight = FontWeight.ExtraBold)
-                            Text("Press, pulse, wave, repeat.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                        ExpressiveGlyph("✦", MaterialTheme.colorScheme.primaryContainer, modifier = Modifier.size(34.dp), glyphColor = MaterialTheme.colorScheme.onPrimaryContainer)
-                    }
-
-                    AnimatedVisibility(visible = bannerVisible) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(22.dp))
-                                .background(MaterialTheme.colorScheme.secondaryContainer)
-                                .clickable { bannerVisible = false }
-                                .padding(horizontal = 16.dp, vertical = 12.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                "✨ Expressive interaction",
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
-            }
-
-            Text("Pick your energy", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                listOf("Bright", "Playful", "Fresh").forEach { name ->
-                    FilterChip(
-                        selected = energy == name,
-                        onClick = { energy = name },
-                        label = { Text(name) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(30.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-            ) {
-                Row(Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
-                    ExpressiveGlyph("♥", MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(56.dp), glyphColor = MaterialTheme.colorScheme.onTertiary)
-                    Spacer(Modifier.width(14.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text("Expressive by default", fontWeight = FontWeight.Black)
-                        Text(
-                            "Big type, broad shapes, dynamic color, playful motion and strong interaction feedback.",
-                            color = MaterialTheme.colorScheme.onTertiaryContainer
-                        )
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(92.dp))
+    fun refresh() {
+        if (apiKey.isBlank() || office.isBlank() || schoolCode.isBlank()) {
+            scope.launch { snackbar.showSnackbar("API 키, 교육청 코드, 학교 코드를 입력해 주세요.") }
+            return
         }
+        loading = true
+        scope.launch {
+            try {
+                val client = NeisClient(apiKey)
+                val day = date.format(DateTimeFormatter.BASIC_ISO_DATE)
+                val nextLessons = if (mode != DisplayMode.MEAL) client.timetable(level.apiName, office, schoolCode, grade, classNo, day)
+                    .map { LessonUi(it.period, it.subject) } else emptyList()
+                val nextMeals = if (mode != DisplayMode.TIMETABLE) client.meals(office, schoolCode, day)
+                    .map { MealUi(it.type, it.items, it.kcal) } else emptyList()
+                lessons = nextLessons
+                meals = nextMeals
+                WallpaperStorage.save(
+                    context,
+                    WallpaperSnapshot(
+                        schoolName = schoolName.ifBlank { "우리 학교" },
+                        date = day,
+                        mode = mode.name,
+                        lessons = nextLessons.map { WallpaperLesson(it.period, it.subject) },
+                        meals = nextMeals.map { WallpaperMeal(it.type, it.items, it.kcal) }
+                    )
+                )
+                snackbar.showSnackbar("${date.format(DateTimeFormatter.ofPattern("M월 d일", Locale.KOREAN))} 데이터를 저장했습니다.")
+            } catch (t: Throwable) {
+                snackbar.showSnackbar(t.message ?: "데이터를 불러오지 못했습니다.")
+            } finally {
+                loading = false
+            }
+        }
+    }
 
-        FloatingActionButton(
-            onClick = {
-                count = 0
-                progress = 0.25f
-                energy = "Spark"
-                bannerVisible = false
-            },
-            modifier = Modifier.align(Alignment.BottomEnd).padding(18.dp),
-            containerColor = MaterialTheme.colorScheme.tertiary,
-            contentColor = MaterialTheme.colorScheme.onTertiary,
-            shape = RoundedCornerShape(24.dp)
-        ) {
-            Text("↻", fontSize = 24.sp, fontWeight = FontWeight.Black)
+    MaterialExpressiveTheme(
+        colorScheme = when {
+            inspection -> expressiveLightColorScheme()
+            android.os.Build.VERSION.SDK_INT >= 31 && isSystemInDarkTheme() -> dynamicDarkColorScheme(context)
+            android.os.Build.VERSION.SDK_INT >= 31 -> dynamicLightColorScheme(context)
+            isSystemInDarkTheme() -> expressiveDarkColorScheme()
+            else -> expressiveLightColorScheme()
+        }
+    ) {
+        Scaffold(
+            topBar = { TopAppBar(title = { Text("오늘의 학교") }) },
+            snackbarHost = { SnackbarHost(snackbar) }
+        ) { padding ->
+            LazyColumn(
+                modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                item { Spacer(Modifier.height(8.dp)) }
+                item { HeroCard(schoolName, date, mode) }
+                item {
+                    ConfigCard(apiKey, ::saveApiKey, office, ::saveOffice, schoolCode, ::saveSchoolCode, schoolName, ::saveSchoolName)
+                }
+                item {
+                    SchoolCard(level, ::saveLevel, grade, ::saveGrade, classNo, ::saveClassNo, mode, ::saveMode)
+                }
+                item {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Button(modifier = Modifier.weight(1f), enabled = !loading, onClick = ::refresh) {
+                            Icon(Icons.Default.CloudDownload, null)
+                            Spacer(Modifier.width(8.dp))
+                            Text("새로고침")
+                        }
+                        Button(modifier = Modifier.weight(1f), enabled = !loading, onClick = {
+                            context.startActivity(Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER).apply {
+                                putExtra(WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT, ComponentName(context, NeisLiveWallpaperService::class.java))
+                            })
+                        }) {
+                            Icon(Icons.Default.Wallpaper, null)
+                            Spacer(Modifier.width(8.dp))
+                            Text("배경화면 적용")
+                        }
+                    }
+                }
+                item {
+                    AnimatedContent(targetState = loading, label = "loading") { isLoading ->
+                        if (isLoading) Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            LoadingIndicator()
+                            LinearProgressIndicator(Modifier.fillMaxWidth())
+                        } else {
+                            Text("설정값은 입력하는 즉시 자동 저장됩니다.")
+                        }
+                    }
+                }
+                if (lessons.isNotEmpty()) item { TimetablePreview(lessons) }
+                if (meals.isNotEmpty()) item { MealPreview(meals) }
+                item { Spacer(Modifier.height(28.dp)) }
+            }
         }
     }
 }
 
 @Composable
-private fun ExpressiveGlyph(
-    glyph: String,
-    containerColor: Color,
-    modifier: Modifier,
-    glyphColor: Color = Color.White,
-) {
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(22.dp))
-            .background(containerColor),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(glyph, color = glyphColor, fontSize = 22.sp, fontWeight = FontWeight.Black)
+private fun HeroCard(school: String, date: LocalDate, mode: DisplayMode) {
+    ElevatedCard(modifier = Modifier.fillMaxWidth().animateContentSize(), colors = CardDefaults.elevatedCardColors()) {
+        Column(Modifier.padding(22.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(date.format(DateTimeFormatter.ofPattern("M월 d일 (E)", Locale.KOREAN)), style = MaterialTheme.typography.labelLarge)
+            Text(school.ifBlank { "우리 학교" }, style = MaterialTheme.typography.headlineMedium)
+            Text("${mode.label}를 배경화면에서 한눈에", style = MaterialTheme.typography.bodyLarge)
+        }
     }
 }
 
 @Composable
-private fun ExpressiveWaveProgress(
-    progress: Float,
-    phase: Float,
-    color: Color,
-    trackColor: Color,
+private fun ConfigCard(
+    apiKey: String, onApiKey: (String) -> Unit,
+    office: String, onOffice: (String) -> Unit,
+    schoolCode: String, onSchoolCode: (String) -> Unit,
+    schoolName: String, onSchoolName: (String) -> Unit
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth().height(18.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(3.dp)
-    ) {
-        repeat(28) { index ->
-            val normalized = index / 27f
-            val active = normalized <= progress
-            val wave = (sin((normalized * PI * 4.0) + (phase * PI * 2.0)) * 0.5 + 0.5).toFloat()
-            val height = if (active) (7 + wave * 9).dp else 5.dp
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(height)
-                    .clip(RoundedCornerShape(50))
-                    .background(if (active) color else trackColor)
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Key, null)
+                Spacer(Modifier.width(10.dp))
+                Text("설정 · 나이스 연결", style = MaterialTheme.typography.titleLarge)
+            }
+            Text("API 키는 이 기기에 자동 저장되며, 입력 후 다시 앱을 열어도 유지됩니다.", style = MaterialTheme.typography.bodyMedium)
+            OutlinedTextField(
+                value = apiKey,
+                onValueChange = onApiKey,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("나이스 API 키") },
+                placeholder = { Text("발급받은 인증키를 입력") },
+                visualTransformation = PasswordVisualTransformation(),
+                singleLine = true
             )
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedTextField(office, onOffice, Modifier.weight(1f), label = { Text("교육청 코드") }, singleLine = true)
+                OutlinedTextField(schoolCode, onSchoolCode, Modifier.weight(1f), label = { Text("학교 코드") }, singleLine = true)
+            }
+            OutlinedTextField(schoolName, onSchoolName, Modifier.fillMaxWidth(), label = { Text("표시할 학교 이름") }, singleLine = true)
+        }
+    }
+}
+
+@Composable
+private fun SchoolCard(
+    level: SchoolLevel, onLevel: (SchoolLevel) -> Unit,
+    grade: String, onGrade: (String) -> Unit,
+    classNo: String, onClassNo: (String) -> Unit,
+    mode: DisplayMode, onMode: (DisplayMode) -> Unit
+) {
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Text("학교·표시 설정", style = MaterialTheme.typography.titleLarge)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                SchoolLevel.entries.forEach { value -> FilterChip(selected = level == value, onClick = { onLevel(value) }, label = { Text(value.label) }) }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedTextField(grade, onGrade, Modifier.weight(1f), label = { Text("학년") }, singleLine = true)
+                OutlinedTextField(classNo, onClassNo, Modifier.weight(1f), label = { Text("반") }, singleLine = true)
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                DisplayMode.entries.forEach { value ->
+                    FilterChip(
+                        selected = mode == value,
+                        onClick = { onMode(value) },
+                        label = { Text(value.label) },
+                        leadingIcon = if (mode == value) {
+                            { Icon(if (value == DisplayMode.MEAL) Icons.Default.Fastfood else Icons.Default.CalendarMonth, null) }
+                        } else null
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TimetablePreview(lessons: List<LessonUi>) {
+    Card(Modifier.fillMaxWidth()) {
+        Column {
+            ListItem(headlineContent = { Text("시간표", style = MaterialTheme.typography.titleLarge) }, leadingContent = { Icon(Icons.Default.CalendarMonth, null) })
+            lessons.forEach { lesson -> ListItem(headlineContent = { Text("${lesson.period}교시") }, supportingContent = { Text(lesson.subject) }) }
+        }
+    }
+}
+
+@Composable
+private fun MealPreview(meals: List<MealUi>) {
+    Card(Modifier.fillMaxWidth()) {
+        Column {
+            ListItem(headlineContent = { Text("급식", style = MaterialTheme.typography.titleLarge) }, leadingContent = { Icon(Icons.Default.Fastfood, null) })
+            meals.forEach { meal ->
+                ListItem(
+                    headlineContent = { Text(meal.type) },
+                    supportingContent = { Text(meal.items.joinToString(" · ")) },
+                    trailingContent = { meal.kcal?.let { Text(it) } }
+                )
+            }
         }
     }
 }
