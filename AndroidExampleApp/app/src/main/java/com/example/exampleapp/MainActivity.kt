@@ -10,13 +10,13 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,7 +38,6 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.Card
@@ -53,9 +52,9 @@ import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.Text
 import androidx.compose.material3.expressiveLightColorScheme
-import androidx.compose.material3.Shapes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -71,7 +70,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
@@ -109,7 +107,12 @@ private fun ExpressiveApp() {
     val scope = rememberCoroutineScope()
     val pulse = remember { Animatable(1f) }
     val infinite = rememberInfiniteTransition(label = "ambient")
-    val ambientRotation by infinite.animateFloatAsStateCompat(label = "ambientRotation", initial = 0f, targetValue = 360f, durationMillis = 18000)
+    val ambientRotation by infinite.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(tween(18000)),
+        label = "ambientRotation"
+    )
     val heroScale by animateFloatAsState(
         targetValue = if (bannerVisible) 1.04f else 1f,
         animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
@@ -149,7 +152,7 @@ private fun ExpressiveApp() {
                         "MATERIAL 3 EXPRESSIVE",
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Black,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Black,
                         letterSpacing = 1.8.sp
                     )
                     AnimatedContent(targetState = energy, label = "headline") { target ->
@@ -161,7 +164,7 @@ private fun ExpressiveApp() {
                                 else -> "Make it move."
                             },
                             style = MaterialTheme.typography.displaySmall,
-                            fontWeight = FontWeight.Black
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Black
                         )
                     }
                     Text(
@@ -225,7 +228,7 @@ private fun ExpressiveApp() {
                                 "$count",
                                 style = MaterialTheme.typography.displayLarge,
                                 color = MaterialTheme.colorScheme.onPrimary,
-                                fontWeight = FontWeight.Black
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.Black
                             )
                             Text("moments", color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.84f))
                         }
@@ -281,15 +284,18 @@ private fun ExpressiveApp() {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("Responsive motion", fontWeight = FontWeight.ExtraBold)
+                            Text("Responsive motion", fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold)
                             Text("Press, expand, morph, repeat.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        LoadingIndicator(modifier = Modifier.size(32.dp))
+                        LoadingIndicator(
+                            progress = { progress },
+                            modifier = Modifier.size(32.dp)
+                        )
                     }
                 }
             }
 
-            Text("Pick your energy", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text("Pick your energy", style = MaterialTheme.typography.titleLarge, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                 listOf("Bright", "Playful", "Fresh").forEach { name ->
                     FilterChip(
@@ -316,7 +322,7 @@ private fun ExpressiveApp() {
                     )
                     Spacer(Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Shape + motion + feedback", fontWeight = FontWeight.Black)
+                        Text("Shape + motion + feedback", fontWeight = androidx.compose.ui.text.font.FontWeight.Black)
                         Text(
                             "Wavy progress, expressive loading, grouped actions and responsive movement use the same expressive system.",
                             color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -351,7 +357,7 @@ private fun ExpressiveApp() {
                     .clickable { bannerVisible = false }
                     .padding(horizontal = 18.dp, vertical = 10.dp)
             ) {
-                Text("✨ Expressive interaction", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
+                Text("✨ Expressive interaction", color = MaterialTheme.colorScheme.onPrimary, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
             }
         }
 
@@ -371,16 +377,4 @@ private fun ExpressiveApp() {
             Icon(Icons.Default.Refresh, contentDescription = "Reset")
         }
     }
-}
-
-@Composable
-private fun androidx.compose.runtime.State<Float>.dummy() = value
-
-private fun androidx.compose.animation.core.InfiniteTransition.animateFloatAsStateCompat(
-    label: String,
-    initialValue: Float,
-    targetValue: Float,
-    durationMillis: Int
-): androidx.compose.runtime.State<Float> {
-    return androidx.compose.runtime.mutableFloatStateOf(initialValue + 0f + targetValue * 0f)
 }
