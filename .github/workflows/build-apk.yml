@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 env:
-  GRADLE_VERSION: "8.7"
+  GRADLE_VERSION: "9.3.1"
 
 jobs:
   build-apk:
