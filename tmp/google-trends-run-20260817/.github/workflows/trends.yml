@@ -1,0 +1,38 @@
+name: temporary-google-trends
+
+on:
+  push:
+    branches:
+      - tmp/google-trends-run-20260817
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytrends pandas numpy openpyxl
+
+      - name: Run Google Trends
+        run: python tmp/google-trends-run-20260817/run.py
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: google-trends-results
+          path: tmp/google-trends-run-20260817/out/
+          if-no-files-found: error
+          retention-days: 1
