@@ -38,11 +38,10 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.ButtonGroup
-import androidx.compose.material3.ButtonGroupDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
@@ -70,6 +69,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
@@ -89,8 +89,9 @@ class MainActivity : ComponentActivity() {
                 colorScheme = expressiveLightColorScheme(),
                 motionScheme = MotionScheme.expressive(),
                 shapes = Shapes(largeIncreased = RoundedCornerShape(36.dp)),
-                content = { ExpressiveApp() }
-            )
+            ) {
+                ExpressiveApp()
+            }
         }
     }
 }
@@ -100,7 +101,6 @@ class MainActivity : ComponentActivity() {
 private fun ExpressiveApp() {
     var count by rememberSaveable { mutableIntStateOf(0) }
     var energy by rememberSaveable { mutableStateOf("Spark") }
-    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
     var bannerVisible by rememberSaveable { mutableStateOf(false) }
     var progress by rememberSaveable { mutableFloatStateOf(0.25f) }
 
@@ -114,7 +114,7 @@ private fun ExpressiveApp() {
         label = "ambientRotation"
     )
     val heroScale by animateFloatAsState(
-        targetValue = if (bannerVisible) 1.04f else 1f,
+        targetValue = if (bannerVisible) 1.035f else 1f,
         animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
         label = "heroScale"
     )
@@ -152,7 +152,7 @@ private fun ExpressiveApp() {
                         "MATERIAL 3 EXPRESSIVE",
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.primary,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Black,
+                        fontWeight = FontWeight.Black,
                         letterSpacing = 1.8.sp
                     )
                     AnimatedContent(targetState = energy, label = "headline") { target ->
@@ -164,7 +164,7 @@ private fun ExpressiveApp() {
                                 else -> "Make it move."
                             },
                             style = MaterialTheme.typography.displaySmall,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Black
+                            fontWeight = FontWeight.Black
                         )
                     }
                     Text(
@@ -227,45 +227,33 @@ private fun ExpressiveApp() {
                             Text(
                                 "$count",
                                 style = MaterialTheme.typography.displayLarge,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                fontWeight = androidx.compose.ui.text.font.FontWeight.Black
+                                color = Color.White,
+                                fontWeight = FontWeight.Black
                             )
-                            Text("moments", color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.84f))
+                            Text("moments", color = Color.White.copy(alpha = 0.84f))
                         }
                     }
 
-                    ButtonGroup(
-                        overflowIndicator = { menuState ->
-                            ButtonGroupDefaults.OverflowIndicator(menuState = menuState)
+                    Button(
+                        onClick = {
+                            count++
+                            progress = min(1f, progress + 0.1f)
+                            bannerVisible = true
+                            scope.launch {
+                                pulse.animateTo(1.08f, tween(180))
+                                pulse.animateTo(1f, spring(dampingRatio = Spring.DampingRatioMediumBouncy))
+                            }
                         },
-                        expandedRatio = 0.8f,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().height(58.dp),
+                        shape = RoundedCornerShape(24.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = energyColor,
+                            contentColor = Color.White
+                        )
                     ) {
-                        clickableItem(
-                            onClick = {
-                                count++
-                                progress = min(1f, progress + 0.1f)
-                                bannerVisible = true
-                                scope.launch {
-                                    pulse.animateTo(1.08f, tween(180))
-                                    pulse.animateTo(1f, spring(dampingRatio = Spring.DampingRatioMediumBouncy))
-                                }
-                            },
-                            label = "Celebrate",
-                            icon = { Icon(Icons.Default.Celebration, null) }
-                        )
-                        toggleableItem(
-                            checked = selectedTab == 1,
-                            label = "Focus",
-                            onCheckedChange = { selectedTab = if (it) 1 else 0 },
-                            icon = { Icon(Icons.Default.Favorite, null) }
-                        )
-                        toggleableItem(
-                            checked = selectedTab == 2,
-                            label = "Color",
-                            onCheckedChange = { selectedTab = if (it) 2 else 0 },
-                            icon = { Icon(Icons.Default.Palette, null) }
-                        )
+                        Icon(Icons.Default.Celebration, null)
+                        Spacer(Modifier.width(10.dp))
+                        Text("Create a moment", fontWeight = FontWeight.Bold, fontSize = 17.sp)
                     }
 
                     LinearWavyProgressIndicator(
@@ -284,18 +272,36 @@ private fun ExpressiveApp() {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("Responsive motion", fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold)
-                            Text("Press, expand, morph, repeat.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("Responsive motion", fontWeight = FontWeight.ExtraBold)
+                            Text("Press, pulse, wave, repeat.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         LoadingIndicator(
                             progress = { progress },
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(34.dp)
                         )
+                    }
+
+                    AnimatedVisibility(visible = bannerVisible) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(22.dp))
+                                .background(MaterialTheme.colorScheme.secondaryContainer)
+                                .clickable { bannerVisible = false }
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "✨ Expressive interaction",
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }
 
-            Text("Pick your energy", style = MaterialTheme.typography.titleLarge, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+            Text("Pick your energy", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                 listOf("Bright", "Playful", "Fresh").forEach { name ->
                     FilterChip(
@@ -310,55 +316,31 @@ private fun ExpressiveApp() {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(30.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-                elevation = CardDefaults.cardElevation(0.dp)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Row(modifier = Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
-                    ContainedLoadingIndicator(
-                        progress = { progress },
-                        modifier = Modifier.size(54.dp),
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        indicatorColor = MaterialTheme.colorScheme.secondary
-                    )
-                    Spacer(Modifier.width(16.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(MaterialTheme.colorScheme.tertiary),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.Favorite, null, tint = MaterialTheme.colorScheme.onTertiary)
+                    }
+                    Spacer(Modifier.width(14.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Shape + motion + feedback", fontWeight = androidx.compose.ui.text.font.FontWeight.Black)
+                        Text("Expressive by default", fontWeight = FontWeight.Black)
                         Text(
-                            "Wavy progress, expressive loading, grouped actions and responsive movement use the same expressive system.",
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                            "Big type, broad shapes, dynamic color, playful motion and strong interaction feedback.",
+                            color = MaterialTheme.colorScheme.onTertiaryContainer
                         )
                     }
                 }
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                repeat(3) { index ->
-                    AssistChip(
-                        onClick = { selectedTab = index },
-                        label = { Text("State ${index + 1}") },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-
             Spacer(Modifier.height(92.dp))
-        }
-
-        AnimatedVisibility(
-            visible = bannerVisible,
-            modifier = Modifier.align(Alignment.TopCenter)
-        ) {
-            Box(
-                modifier = Modifier
-                    .padding(top = 10.dp)
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(MaterialTheme.colorScheme.primary)
-                    .border(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f), RoundedCornerShape(24.dp))
-                    .clickable { bannerVisible = false }
-                    .padding(horizontal = 18.dp, vertical = 10.dp)
-            ) {
-                Text("✨ Expressive interaction", color = MaterialTheme.colorScheme.onPrimary, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
-            }
         }
 
         FloatingActionButton(
@@ -367,12 +349,11 @@ private fun ExpressiveApp() {
                 progress = 0.25f
                 energy = "Spark"
                 bannerVisible = false
-                selectedTab = 0
             },
             modifier = Modifier.align(Alignment.BottomEnd).padding(18.dp),
             containerColor = MaterialTheme.colorScheme.tertiary,
             contentColor = MaterialTheme.colorScheme.onTertiary,
-            shape = RoundedCornerShape(22.dp)
+            shape = RoundedCornerShape(24.dp)
         ) {
             Icon(Icons.Default.Refresh, contentDescription = "Reset")
         }
