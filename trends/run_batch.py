@@ -1,13 +1,14 @@
 from pathlib import Path
 import pandas as pd
-from pytrends.request import TrendReq
+from trendspy import Trends
 
 terms = [x.strip() for x in Path('trends/batch-01.txt').read_text(encoding='utf-8').splitlines() if x.strip()]
 anchor = '유튜브'
-pytrends = TrendReq(hl='ko', tz=540, timeout=(10,30), retries=0, backoff_factor=0)
-# pytrends uses an empty gprop to indicate standard web search.
-pytrends.build_payload(terms + [anchor], cat=0, timeframe='2004-01-01 2026-08-15', geo='KR', gprop='')
-df = pytrends.interest_over_time().drop(columns=['isPartial'], errors='ignore')
+tr = Trends()
+
+df = tr.interest_over_time(terms + [anchor], timeframe='all', geo='KR')
+if 'isPartial' in df.columns:
+    df = df.drop(columns=['isPartial'])
 
 out = Path('trends/results')
 out.mkdir(parents=True, exist_ok=True)
@@ -15,8 +16,11 @@ df.to_csv(out/'batch-01-timeseries.csv', encoding='utf-8-sig')
 
 rows=[]
 for term in terms:
-    s = df[term].astype(float)
-    a = df[anchor].astype(float).replace(0, pd.NA)
+    if term not in df.columns:
+        rows.append({'keyword':term,'mean_anchor_relative':None,'max_anchor_relative':None,'max_date':None,'observations':0})
+        continue
+    s = pd.to_numeric(df[term], errors='coerce')
+    a = pd.to_numeric(df[anchor], errors='coerce').replace(0, pd.NA)
     ratio = (s/a).dropna()
     if ratio.empty:
         rows.append({'keyword':term,'mean_anchor_relative':None,'max_anchor_relative':None,'max_date':None,'observations':0})
