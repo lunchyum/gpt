@@ -1,0 +1,32 @@
+name: Google Trends bulk collection
+
+on:
+  push:
+    branches:
+      - google-trends-bulk-2026-08-17
+
+jobs:
+  trends:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: python -m pip install -U pip pytrends pandas numpy openpyxl
+      - name: Run Google Trends collection
+        run: python trends/run_trends.py
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: google-trends-results
+          path: |
+            trends_summary.csv
+            trends_timeseries.csv
+            trends_summary.xlsx
+            failed_keywords.csv
+            trends/raw/
