@@ -21,7 +21,7 @@ BATCH_TARGETS = 4
 START = '2004-01-01'
 END = (pd.Timestamp.now(tz='Asia/Seoul').normalize() - pd.Timedelta(days=2)).strftime('%Y-%m-%d')
 TIMEFRAME = f'{START} {END}'
-MAX_RETRIES = 7
+MAX_RETRIES = 4
 
 
 def load_keywords():
@@ -42,7 +42,7 @@ def load_keywords():
 
 
 def make_client():
-    return TrendReq(hl=HL, tz=TZ, timeout=(15, 60), retries=0, backoff_factor=0)
+    return TrendReq(hl=HL, tz=TZ, timeout=(10, 30), retries=0, backoff_factor=0)
 
 
 def fetch(client, terms):
@@ -54,7 +54,7 @@ def fetch(client, terms):
                 cat=0,
                 timeframe=TIMEFRAME,
                 geo=GEO,
-                gprop='websearch',
+                gprop='',
             )
             df = client.interest_over_time()
             if df is None or df.empty:
@@ -62,9 +62,17 @@ def fetch(client, terms):
             if 'isPartial' in df.columns:
                 df = df.drop(columns=['isPartial'])
             return df
+        except ValueError:
+            raise
         except Exception as e:
             last = e
-            wait = min(180, 5 * (2 ** (attempt - 1)) + random.uniform(1, 7))
+            text = str(e).lower()
+            if attempt >= MAX_RETRIES:
+                break
+            if '429' in text or 'too many' in text or 'rate' in text:
+                wait = 20 * attempt + random.uniform(2, 8)
+            else:
+                wait = 2 ** attempt + random.uniform(1, 3)
             print(f'  attempt {attempt}/{MAX_RETRIES} failed: {e}; sleep {wait:.1f}s', flush=True)
             time.sleep(wait)
     raise RuntimeError(f'failed terms={terms}: {last}')
@@ -98,7 +106,7 @@ def main():
             for kw in batch:
                 failures.append({'keyword': kw, 'error': repr(e)})
         if bi < len(batches):
-            time.sleep(random.uniform(3, 7))
+            time.sleep(random.uniform(2, 4))
 
     if not all_ratio:
         raise SystemExit('No successful batches')
