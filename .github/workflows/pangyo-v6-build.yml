@@ -5,6 +5,11 @@ on:
     paths:
       - "pangyo-v6-src.tgz"
       - ".github/workflows/pangyo-v6-build.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "pangyo-v6-src.tgz"
+      - ".github/workflows/pangyo-v6-build.yml"
   workflow_dispatch:
 
 jobs:
