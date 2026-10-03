@@ -1,0 +1,84 @@
+name: BlaBlur iOS
+
+on:
+  pull_request:
+    paths:
+      - 'BlaBlur/**'
+      - '.github/workflows/blablur-ios.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'BlaBlur/**'
+      - '.github/workflows/blablur-ios.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: blablur-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: macos-15
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: BlaBlur
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Show Xcode version
+        run: xcodebuild -version
+      - name: Build for iPhone without signing
+        run: |
+          set -o pipefail
+          xcodebuild -project BlaBlur.xcodeproj -scheme BlaBlur \
+            -configuration Release -destination 'generic/platform=iOS' \
+            -derivedDataPath build/device CODE_SIGNING_ALLOWED=NO build 2>&1 | tee device-build.log
+          mkdir -p build/artifacts
+          ditto -c -k --sequesterRsrc --keepParent \
+            build/device/Build/Products/Release-iphoneos/BlaBlur.app \
+            build/artifacts/BlaBlur-unsigned-device.app.zip
+      - name: Select available iPhone simulator
+        run: |
+          xcrun simctl list devices available --json > build/simulators.json
+          python3 - <<'PY'
+          import json, os
+          with open('build/simulators.json') as f:
+              devices = json.load(f)['devices']
+          candidates = [d for runtime, group in devices.items() if 'iOS' in runtime
+                        for d in group if d.get('isAvailable') and d['name'].startswith('iPhone')]
+          if not candidates:
+              raise SystemExit('No available iPhone simulator on this runner')
+          with open(os.environ['GITHUB_ENV'], 'a') as f:
+              f.write('BLABLUR_SIMULATOR_ID=' + candidates[0]['udid'] + '\n')
+          print('Using simulator:', candidates[0]['name'])
+          PY
+      - name: Run iOS tests
+        run: |
+          set -o pipefail
+          xcodebuild -project BlaBlur.xcodeproj -scheme BlaBlur \
+            -configuration Debug -destination "platform=iOS Simulator,id=$BLABLUR_SIMULATOR_ID" \
+            -derivedDataPath build/simulator -resultBundlePath build/TestResults.xcresult \
+            -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO test 2>&1 | tee simulator-test.log
+      - name: Package simulator app
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent \
+            build/simulator/Build/Products/Debug-iphonesimulator/BlaBlur.app \
+            build/artifacts/BlaBlur-simulator.app.zip
+      - name: Upload build outputs and test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: BlaBlur-build-results
+          path: |
+            BlaBlur/build/artifacts/*
+            BlaBlur/build/TestResults.xcresult
+            BlaBlur/*-build.log
+            BlaBlur/*-test.log
+          if-no-files-found: warn
+          retention-days: 14
