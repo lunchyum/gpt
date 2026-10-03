@@ -1,0 +1,330 @@
+// !$*UTF8*$!
+{
+	"archiveVersion" = "1";
+	"classes" = {
+	};
+	"objectVersion" = "56";
+	"objects" = {
+		"000000000000000000000001" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "AppModel.swift";
+			"sourceTree" = "<group>";
+		};
+		"000000000000000000000002" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "000000000000000000000001";
+		};
+		"000000000000000000000003" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "BlaBlurApp.swift";
+			"sourceTree" = "<group>";
+		};
+		"000000000000000000000004" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "000000000000000000000003";
+		};
+		"000000000000000000000005" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "BlurRenderer.swift";
+			"sourceTree" = "<group>";
+		};
+		"000000000000000000000006" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "000000000000000000000005";
+		};
+		"000000000000000000000007" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "ContentView.swift";
+			"sourceTree" = "<group>";
+		};
+		"000000000000000000000008" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "000000000000000000000007";
+		};
+		"000000000000000000000009" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "BlurRendererTests.swift";
+			"sourceTree" = "<group>";
+		};
+		"00000000000000000000000A" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "000000000000000000000009";
+		};
+		"00000000000000000000000B" = {
+			"isa" = "PBXGroup";
+			"children" = ( "000000000000000000000001", "000000000000000000000003", "000000000000000000000005", "000000000000000000000007" );
+			"path" = "BlaBlur";
+			"sourceTree" = "<group>";
+		};
+		"00000000000000000000000C" = {
+			"isa" = "PBXGroup";
+			"children" = ( "000000000000000000000009" );
+			"path" = "BlaBlurTests";
+			"sourceTree" = "<group>";
+		};
+		"00000000000000000000000D" = {
+			"isa" = "PBXFileReference";
+			"explicitFileType" = "wrapper.application";
+			"includeInIndex" = "0";
+			"path" = "BlaBlur.app";
+			"sourceTree" = "BUILT_PRODUCTS_DIR";
+		};
+		"00000000000000000000000E" = {
+			"isa" = "PBXFileReference";
+			"explicitFileType" = "wrapper.cfbundle";
+			"includeInIndex" = "0";
+			"path" = "BlaBlurTests.xctest";
+			"sourceTree" = "BUILT_PRODUCTS_DIR";
+		};
+		"00000000000000000000000F" = {
+			"isa" = "PBXGroup";
+			"children" = ( "00000000000000000000000D", "00000000000000000000000E" );
+			"name" = "Products";
+			"sourceTree" = "<group>";
+		};
+		"000000000000000000000010" = {
+			"isa" = "PBXGroup";
+			"children" = ( "00000000000000000000000B", "00000000000000000000000C", "00000000000000000000000F" );
+			"sourceTree" = "<group>";
+		};
+		"000000000000000000000011" = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Debug";
+			"buildSettings" = {
+				"SDKROOT" = "iphoneos";
+				"IPHONEOS_DEPLOYMENT_TARGET" = "16.0";
+				"SWIFT_VERSION" = "5.0";
+				"CLANG_ENABLE_MODULES" = "YES";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"TARGETED_DEVICE_FAMILY" = "1,2";
+				"SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
+				"SUPPORTS_MACCATALYST" = "NO";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"PRODUCT_NAME" = "$(TARGET_NAME)";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.personal.BlaBlur";
+				"MARKETING_VERSION" = "1.0";
+				"CURRENT_PROJECT_VERSION" = "1";
+				"INFOPLIST_KEY_CFBundleDisplayName" = "블라블러";
+				"INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription" = "블러 처리된 이미지를 사진에 저장합니다.";
+				"INFOPLIST_KEY_UILaunchScreen_Generation" = "YES";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation" = "YES";
+				"INFOPLIST_KEY_UISupportedInterfaceOrientations" = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				"LD_RUNPATH_SEARCH_PATHS" = ( "$(inherited)", "@executable_path/Frameworks" );
+				"ENABLE_TESTABILITY" = "YES";
+				"SWIFT_OPTIMIZATION_LEVEL" = "-Onone";
+				"GCC_PREPROCESSOR_DEFINITIONS" = ( "$(inherited)", "DEBUG=1" );
+			};
+		};
+		"000000000000000000000012" = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Release";
+			"buildSettings" = {
+				"SDKROOT" = "iphoneos";
+				"IPHONEOS_DEPLOYMENT_TARGET" = "16.0";
+				"SWIFT_VERSION" = "5.0";
+				"CLANG_ENABLE_MODULES" = "YES";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"TARGETED_DEVICE_FAMILY" = "1,2";
+				"SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
+				"SUPPORTS_MACCATALYST" = "NO";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"PRODUCT_NAME" = "$(TARGET_NAME)";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.personal.BlaBlur";
+				"MARKETING_VERSION" = "1.0";
+				"CURRENT_PROJECT_VERSION" = "1";
+				"INFOPLIST_KEY_CFBundleDisplayName" = "블라블러";
+				"INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription" = "블러 처리된 이미지를 사진에 저장합니다.";
+				"INFOPLIST_KEY_UILaunchScreen_Generation" = "YES";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation" = "YES";
+				"INFOPLIST_KEY_UISupportedInterfaceOrientations" = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				"LD_RUNPATH_SEARCH_PATHS" = ( "$(inherited)", "@executable_path/Frameworks" );
+				"ENABLE_TESTABILITY" = "YES";
+				"SWIFT_OPTIMIZATION_LEVEL" = "-O";
+			};
+		};
+		"000000000000000000000013" = {
+			"isa" = "XCConfigurationList";
+			"buildConfigurations" = ( "000000000000000000000011", "000000000000000000000012" );
+			"defaultConfigurationIsVisible" = "0";
+			"defaultConfigurationName" = "Release";
+		};
+		"000000000000000000000014" = {
+			"isa" = "PBXSourcesBuildPhase";
+			"buildActionMask" = "2147483647";
+			"files" = ( "000000000000000000000002", "000000000000000000000004", "000000000000000000000006", "000000000000000000000008" );
+			"runOnlyForDeploymentPostprocessing" = "0";
+		};
+		"000000000000000000000015" = {
+			"isa" = "PBXFrameworksBuildPhase";
+			"buildActionMask" = "2147483647";
+			"files" = (  );
+			"runOnlyForDeploymentPostprocessing" = "0";
+		};
+		"000000000000000000000016" = {
+			"isa" = "PBXResourcesBuildPhase";
+			"buildActionMask" = "2147483647";
+			"files" = (  );
+			"runOnlyForDeploymentPostprocessing" = "0";
+		};
+		"000000000000000000000017" = {
+			"isa" = "PBXNativeTarget";
+			"buildConfigurationList" = "000000000000000000000013";
+			"buildPhases" = ( "000000000000000000000014", "000000000000000000000015", "000000000000000000000016" );
+			"buildRules" = (  );
+			"dependencies" = (  );
+			"name" = "BlaBlur";
+			"productName" = "BlaBlur";
+			"productReference" = "00000000000000000000000D";
+			"productType" = "com.apple.product-type.application";
+		};
+		"000000000000000000000018" = {
+			"isa" = "PBXProject";
+			"attributes" = {
+				"BuildIndependentTargetsInParallel" = "YES";
+				"LastUpgradeCheck" = "1600";
+				"TargetAttributes" = {
+					"000000000000000000000017" = {
+						"CreatedOnToolsVersion" = "16.0";
+					};
+					"000000000000000000000021" = {
+						"CreatedOnToolsVersion" = "16.0";
+						"TestTargetID" = "000000000000000000000017";
+					};
+				};
+			};
+			"buildConfigurationList" = "000000000000000000000024";
+			"compatibilityVersion" = "Xcode 14.0";
+			"developmentRegion" = "ko";
+			"hasScannedForEncodings" = "0";
+			"knownRegions" = ( "ko", "en", "Base" );
+			"mainGroup" = "000000000000000000000010";
+			"productRefGroup" = "00000000000000000000000F";
+			"projectDirPath" = "";
+			"projectRoot" = "";
+			"targets" = ( "000000000000000000000017", "000000000000000000000021" );
+		};
+		"000000000000000000000019" = {
+			"isa" = "PBXContainerItemProxy";
+			"containerPortal" = "000000000000000000000018";
+			"proxyType" = "1";
+			"remoteGlobalIDString" = "000000000000000000000017";
+			"remoteInfo" = "BlaBlur";
+		};
+		"00000000000000000000001A" = {
+			"isa" = "PBXTargetDependency";
+			"target" = "000000000000000000000017";
+			"targetProxy" = "000000000000000000000019";
+		};
+		"00000000000000000000001B" = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Debug";
+			"buildSettings" = {
+				"SDKROOT" = "iphoneos";
+				"IPHONEOS_DEPLOYMENT_TARGET" = "16.0";
+				"SWIFT_VERSION" = "5.0";
+				"CLANG_ENABLE_MODULES" = "YES";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"TARGETED_DEVICE_FAMILY" = "1,2";
+				"SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
+				"SUPPORTS_MACCATALYST" = "NO";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"PRODUCT_NAME" = "$(TARGET_NAME)";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.personal.BlaBlurTests";
+				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/BlaBlur.app/BlaBlur";
+				"BUNDLE_LOADER" = "$(TEST_HOST)";
+				"LD_RUNPATH_SEARCH_PATHS" = ( "$(inherited)", "@executable_path/Frameworks", "@loader_path/Frameworks" );
+				"SWIFT_OPTIMIZATION_LEVEL" = "-Onone";
+				"GCC_PREPROCESSOR_DEFINITIONS" = ( "$(inherited)", "DEBUG=1" );
+			};
+		};
+		"00000000000000000000001C" = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Release";
+			"buildSettings" = {
+				"SDKROOT" = "iphoneos";
+				"IPHONEOS_DEPLOYMENT_TARGET" = "16.0";
+				"SWIFT_VERSION" = "5.0";
+				"CLANG_ENABLE_MODULES" = "YES";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"TARGETED_DEVICE_FAMILY" = "1,2";
+				"SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
+				"SUPPORTS_MACCATALYST" = "NO";
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"PRODUCT_NAME" = "$(TARGET_NAME)";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.personal.BlaBlurTests";
+				"TEST_HOST" = "$(BUILT_PRODUCTS_DIR)/BlaBlur.app/BlaBlur";
+				"BUNDLE_LOADER" = "$(TEST_HOST)";
+				"LD_RUNPATH_SEARCH_PATHS" = ( "$(inherited)", "@executable_path/Frameworks", "@loader_path/Frameworks" );
+				"SWIFT_OPTIMIZATION_LEVEL" = "-O";
+			};
+		};
+		"00000000000000000000001D" = {
+			"isa" = "XCConfigurationList";
+			"buildConfigurations" = ( "00000000000000000000001B", "00000000000000000000001C" );
+			"defaultConfigurationIsVisible" = "0";
+			"defaultConfigurationName" = "Release";
+		};
+		"00000000000000000000001E" = {
+			"isa" = "PBXSourcesBuildPhase";
+			"buildActionMask" = "2147483647";
+			"files" = ( "00000000000000000000000A" );
+			"runOnlyForDeploymentPostprocessing" = "0";
+		};
+		"00000000000000000000001F" = {
+			"isa" = "PBXFrameworksBuildPhase";
+			"buildActionMask" = "2147483647";
+			"files" = (  );
+			"runOnlyForDeploymentPostprocessing" = "0";
+		};
+		"000000000000000000000020" = {
+			"isa" = "PBXResourcesBuildPhase";
+			"buildActionMask" = "2147483647";
+			"files" = (  );
+			"runOnlyForDeploymentPostprocessing" = "0";
+		};
+		"000000000000000000000021" = {
+			"isa" = "PBXNativeTarget";
+			"buildConfigurationList" = "00000000000000000000001D";
+			"buildPhases" = ( "00000000000000000000001E", "00000000000000000000001F", "000000000000000000000020" );
+			"buildRules" = (  );
+			"dependencies" = ( "00000000000000000000001A" );
+			"name" = "BlaBlurTests";
+			"productName" = "BlaBlurTests";
+			"productReference" = "00000000000000000000000E";
+			"productType" = "com.apple.product-type.bundle.unit-test";
+		};
+		"000000000000000000000022" = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Debug";
+			"buildSettings" = {
+				"CLANG_ENABLE_MODULES" = "YES";
+				"SWIFT_VERSION" = "5.0";
+				"IPHONEOS_DEPLOYMENT_TARGET" = "16.0";
+				"SWIFT_OPTIMIZATION_LEVEL" = "-Onone";
+				"GCC_PREPROCESSOR_DEFINITIONS" = ( "$(inherited)", "DEBUG=1" );
+			};
+		};
+		"000000000000000000000023" = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Release";
+			"buildSettings" = {
+				"CLANG_ENABLE_MODULES" = "YES";
+				"SWIFT_VERSION" = "5.0";
+				"IPHONEOS_DEPLOYMENT_TARGET" = "16.0";
+				"SWIFT_OPTIMIZATION_LEVEL" = "-O";
+			};
+		};
+		"000000000000000000000024" = {
+			"isa" = "XCConfigurationList";
+			"buildConfigurations" = ( "000000000000000000000022", "000000000000000000000023" );
+			"defaultConfigurationIsVisible" = "0";
+			"defaultConfigurationName" = "Release";
+		};
+	};
+	"rootObject" = "000000000000000000000018";
+}
