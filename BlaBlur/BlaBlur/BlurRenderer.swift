@@ -56,7 +56,7 @@ enum BlurRenderer {
         func layout(_ string: NSAttributedString) -> (NSTextStorage, NSLayoutManager, NSTextContainer) {
             let storage = NSTextStorage(attributedString: string)
             let manager = NSLayoutManager()
-            let container = NSTextContainer(size: CGSize(width: 342, height: .greatestFiniteMagnitude))
+            let container = NSTextContainer(size: CGSize(width: 342, height: CGFloat.greatestFiniteMagnitude))
             container.lineFragmentPadding = 0
             manager.addTextContainer(container)
             storage.addLayoutManager(manager)
