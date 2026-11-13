@@ -27,7 +27,9 @@ jobs:
       - name: Install PDF text extractor
         run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
       - name: Download rights-cleared full text and generate CSVs
-        run: python book-harvest/harvest.py
+        run: |
+          python book-harvest/harvest.py
+          python book-harvest/mirror.py
       - name: Upload results including logs
         if: always()
         uses: actions/upload-artifact@v4
