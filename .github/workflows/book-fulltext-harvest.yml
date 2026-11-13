@@ -1,0 +1,38 @@
+name: Book full-text harvest (pilot)
+on:
+  push:
+    branches:
+      - book-fulltext-demo-20261113
+    paths:
+      - "book-harvest/**"
+      - ".github/workflows/book-fulltext-harvest.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      MAX_GUTENBERG_EN: "20"
+      MAX_GUTENBERG_KO: "10"
+      MAX_GOOGLE_BOOKS: "5"
+      GOOGLE_BOOKS_API_KEY: ${{ secrets.GOOGLE_BOOKS_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install PDF text extractor
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+      - name: Download rights-cleared full text and generate CSVs
+        run: python book-harvest/harvest.py
+      - name: Upload results including logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fulltext-csv-pilot
+          path: book-harvest-results/*
+          if-no-files-found: warn
+          retention-days: 7
